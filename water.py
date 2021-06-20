@@ -7,7 +7,7 @@ import math
 
 adc = Adafruit_ADS1x15.ADS1115()
 GAIN = 1
-SENSOR_THRESHOLD = 2000
+SENSOR_THRESHOLD = 20000
 
 PIN = 4
 
