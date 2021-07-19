@@ -30,12 +30,15 @@ def loop():
 		# if dry
 		if (maxValue) > SENSOR_THRESHOLD:
 			GPIO.output(PIN, GPIO.LOW)
-			print("Pump is ON")
+			print("Pump OFF -> ON")
+			sleep(0.5)
+			GPIO.output(PIN, GPIO.HIGH)
+			print("Pump ON -> OFF")
 		# if not dry
 		else:
 			GPIO.output(PIN, GPIO.HIGH)
-			print("Pump is OFF")
-		time.sleep(0.5)
+			print("Pump keeps OFF")
+		time.sleep(1800)
 
 def destroy():
 	GPIO.setup(PIN, GPIO.IN)
