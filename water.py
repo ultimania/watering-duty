@@ -4,10 +4,17 @@ import RPi.GPIO as GPIO
 import time
 import Adafruit_ADS1x15
 import math
+import requests
+import datetime
+import json
 
 adc = Adafruit_ADS1x15.ADS1115()
 GAIN = 1
 SENSOR_THRESHOLD = 17000
+DISCHARGE_SECONDS = 5
+INTERVAL_SECONDS = 100
+POST_URL = "http://192.168.11.22:10024"
+DIFF_JST_FROM_UTC = 9
 
 PIN = 4
 
@@ -26,23 +33,50 @@ def loop():
 			values[i] = adc.read_adc(0, gain = GAIN)
 			if values[i] > maxValue:
 				maxValue = values[i]
-		print("maxValue == " + str(maxValue))
+		logger(
+			"info", 
+			"read some times to avoid pulse value" , 
+			data = {"Humidity": maxValue}
+		)
 		# if dry
 		if (maxValue) > SENSOR_THRESHOLD:
+			post(postBuild(maxValue, 1))
 			GPIO.output(PIN, GPIO.LOW)
-			print("Pump OFF -> ON")
-			sleep(0.5)
+			logger("info", "Pump OFF -> ON")
+			time.sleep(DISCHARGE_SECONDS)
 			GPIO.output(PIN, GPIO.HIGH)
-			print("Pump ON -> OFF")
+			logger("info", "Pump ON -> OFF")
 		# if not dry
 		else:
 			GPIO.output(PIN, GPIO.HIGH)
-			print("Pump keeps OFF")
-		time.sleep(1800)
+			logger("info", "Pump keeps OFF")
+		post(postBuild(maxValue, 0))
+		time.sleep(INTERVAL_SECONDS)
 
 def destroy():
 	GPIO.setup(PIN, GPIO.IN)
 	GPIO.cleanup()
+
+def getNowTimestamp():
+	return datetime.datetime.utcnow() + datetime.timedelta(hours=DIFF_JST_FROM_UTC)
+
+def postBuild(humidity, action):
+	return json.dumps({
+		'humidity': humidity,
+		'action': action,
+		'dischargeTime': 0 if action == 0 else DISCHARGE_TIME,
+		'threshold': SENSOR_THRESHOLD,
+		'createdAt': getNowTimestamp().strftime('%Y-%m-%d %H:%M:%S')
+	})
+
+def post(data):
+	response = requests.post(
+		POST_URL, 
+		data = data
+	)
+
+def logger(level, message, data = ""):
+	print(getNowTimestamp().strftime('%Y-%m-%d %H:%M:%S') + ":[" + level + "] " + message + ":" + str(data))
 
 if __name__ == '__main__':
 	setup()
