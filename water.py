@@ -64,7 +64,7 @@ def postBuild(humidity, action):
 	return json.dumps({
 		'humidity': humidity,
 		'action': action,
-		'dischargeTime': 0 if action == 0 else DISCHARGE_TIME,
+		'dischargeTime': 0 if action == 0 else DISCHARGE_SECONDS,
 		'threshold': SENSOR_THRESHOLD,
 		'createdAt': getNowTimestamp().strftime('%Y-%m-%d %H:%M:%S')
 	})
