@@ -18,4 +18,7 @@ This image is to establish automatic watering system to plant by Raspberry Pi.
 sudo docker build -t sense-and-water-image .
 
 # To run container
-sudo docker run -dit --device=/dev/i2c-1:/dev/i2c-1 --device=/dev/gpiomem:/dev/gpiomem sense-and-water-image
+```
+cd ~/sense-and-water
+sudo docker run -dit -v `pwd`:/opt -v /opt/vc:/opt/vc --env LD_LIBRARY_PATH=/opt/vc/lib --device=/dev/i2c-1:/dev/i2c-1 --device=/dev/gpiomem:/dev/gpiomem --device=/dev/vchiq:/dev/vchiq  --privileged=true --restart=always --name=watering-duty sense-and-water-image
+```
